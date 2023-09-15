@@ -23,11 +23,9 @@ type OrderBook struct {
 	Levels []OrderLevel
 }
 
-func (os *OrderLevel) Add(order Order) (err error) {
-	// logica
-	// return 3, nil
+func (os *OrderLevel) Add(order Order) (err error, success bool) {
 	if os.Price != order.Price {
-		return errors.New("price is not matching with Order Level")
+		return errors.New("price is not matching with Order Level"), false
 	}
 
 	os.Orders = append(os.Orders, order)
@@ -39,7 +37,7 @@ func (os *OrderLevel) Add(order Order) (err error) {
 
 	os.Volume = volumes
 
-	return nil
+	return nil, true
 }
 
 /*

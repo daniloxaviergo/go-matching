@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"go-matching/model"
 )
 
 type OrderBookResponse struct {
@@ -25,12 +26,18 @@ type OrderCreateResponse struct {
 	Status string `json:"status"`
 }
 
+var markets []model.Market
+
+func InitMarket() {
+	markets = make([]model.Market, 0)
+}
+
 func AddOrder(c *gin.Context) {
 	market := c.Param("market")
 	id := c.Query("id")
 	price := c.Query("price")
 	volume := c.Query("volume")
-	
+
 	if id == "" || price == "" || volume == "" || market == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Faltam parametros"})
 		return

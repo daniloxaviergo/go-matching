@@ -13,12 +13,22 @@ func main() {
 		Name: "Sammy the Shark",
 	}
 
-	o := model.Order{
-		Side: "213.0",
+	fmt.Println(c.Name)
+	orderLevel := model.OrderLevel{
+		Price:  0,
+		Volume: 0,
+		Orders: make([]model.Order, 0),
 	}
 
-	btcbrl := model.OrderBook
+	order := model.Order{
+		Id:     1,
+		Price:  0.5,
+		Volume: 10,
+	}
 
-	fmt.Println(c.Name)
-	fmt.Println(o.Side)
+	orderLevel.Add(order)
+	// fmt.Println(orderLevel.Orders)
+
+	fmt.Printf("%v", orderLevel.Orders)
+	fmt.Printf("%v", orderLevel.Volume)
 }

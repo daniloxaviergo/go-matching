@@ -1,5 +1,7 @@
 package model
 
+import "errors"
+
 type Order struct {
 	Id     int64
 	Volume float64
@@ -19,6 +21,25 @@ type Market struct {
 
 type OrderBook struct {
 	Levels []OrderLevel
+}
+
+func (os *OrderLevel) Add(order Order) (err error) {
+	// logica
+	// return 3, nil
+	if os.Price != order.Price {
+		return errors.New("price is not matching with Order Level")
+	}
+
+	os.Orders = append(os.Orders, order)
+
+	var volumes float64 = 0
+	for _, o := range os.Orders {
+		volumes = volumes + o.Volume
+	}
+
+	os.Volume = volumes
+
+	return nil
 }
 
 /*

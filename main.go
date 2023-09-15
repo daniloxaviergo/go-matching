@@ -11,6 +11,7 @@ import (
 func main() {
 
 	// BRUNO E ELTON
+	// http://localhost:8080/manabrl/order-create?id=123&price=12.34&volume=78.85
 	router := gin.Default()
 
 	controllers.InitMarket()
@@ -18,7 +19,7 @@ func main() {
 	router.GET("/:market/order-cancel", controllers.RemoveOrder)
 	router.GET("/:market/orderbook", controllers.OrderBook)
 
-	// router.Run("127.0.0.1:8080")
+	router.Run("0.0.0.0:8080")
 	// BRUNO E ELTON
 	orderBookAsk := model.OrderBook {
 		Levels: make([]model.OrderLevel, 0),

@@ -15,6 +15,7 @@ type OrderLevel struct {
 }
 
 type Market struct {
+	Name string
 	Ask OrderBook
 	Bid OrderBook
 }

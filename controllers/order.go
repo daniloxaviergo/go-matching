@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"go-matching/model"
+	"strconv"
 )
 
 type OrderBookResponse struct {
@@ -37,11 +39,82 @@ func AddOrder(c *gin.Context) {
 	id := c.Query("id")
 	price := c.Query("price")
 	volume := c.Query("volume")
+	side := c.Query("side")
 
-	if id == "" || price == "" || volume == "" || market == "" {
+	if id == "" || price == "" || volume == "" || market == "" || side == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Faltam parametros"})
 		return
 	}
+
+	create_market := true
+	var mkt model.Market
+	var idx int
+
+	for i, o := range markets {
+		if o.Name == market{
+			create_market = false
+			mkt = o
+			idx = i
+		}		
+	}
+
+	if create_market {
+		fmt.Println("CRIANDO MERCADO")
+
+		orderBookAsk := model.OrderBook {
+			Levels: make([]model.OrderLevel, 0),
+		}
+	
+		orderBookBid := model.OrderBook {
+			Levels: make([]model.OrderLevel, 0),
+		}
+	
+		book := model.Market{
+			Name: market,
+			Ask: orderBookAsk,
+			Bid: orderBookBid,
+		}
+
+		markets = append(markets, book)
+
+		mkt = book
+	}
+
+	for i, o := range markets {
+		if o.Name == market{			
+			mkt = o
+			idx = i
+		}		
+	}
+
+	newId, _ := strconv.ParseInt(id, 64, 0)
+	newPrice, _ := strconv.ParseFloat(price, 32)
+	newVolume, _ := strconv.ParseFloat(volume, 32)
+
+	order := model.Order{
+		Id:     newId,
+		Price:  newPrice,
+		Volume: newVolume,
+	}	
+
+	orderLevel := model.OrderLevel{
+		Price:  newPrice,
+		Volume: 0.0,
+		Orders: make([]model.Order, 0),
+	}
+	_, _ = orderLevel.Add(order)	
+
+	if side == "ask" {		
+		markets[idx].Ask.Levels = append(markets[idx].Ask.Levels, orderLevel)		
+	}else{
+		markets[idx].Bid.Levels = append(markets[idx].Bid.Levels, orderLevel)
+	}	
+
+	// markets = append(markets, mkt)
+
+	fmt.Printf("markets: %v\n", markets)
+
+	fmt.Printf("%v", mkt)
 
 	var response OrderCreateResponse
 	response.Id = id

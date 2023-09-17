@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"go-matching/model"
+	"go-matching/market"
+	"go-matching/order"
 	"strconv"
 )
 
 type OrderBookResponse struct {
 	Market string    `json:"market"`
-	Asks   []float64 `json:"asks"`
-	Bids   []float64 `json:"bids"`
+	Asks   [][2]float64 `json:"asks"`
+	Bids   [][2]float64 `json:"bids"`
 }
 
 type OrderRemoveResponse struct {
@@ -28,126 +28,124 @@ type OrderCreateResponse struct {
 	Status string `json:"status"`
 }
 
-var markets []model.Market
-
-func InitMarket() {
-	markets = make([]model.Market, 0)
-}
+var markets market.Markets
 
 func AddOrder(c *gin.Context) {
-	market := c.Param("market")
-	id := c.Query("id")
-	price := c.Query("price")
-	volume := c.Query("volume")
-	side := c.Query("side")
+	q_market := c.Param("market")
+	q_id := c.Query("id")
+	q_price := c.Query("price")
+	q_volume := c.Query("volume")
+	q_side := c.Query("side")
 
-	if id == "" || price == "" || volume == "" || market == "" || side == "" {
+	if q_id == "" || q_price == "" || q_volume == "" || q_market == "" || q_side == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Faltam parametros"})
 		return
 	}
 
-	create_market := true
-	var mkt model.Market
-	var idx int
+	new_id, _ := strconv.ParseInt(q_id, 64, 0)
+	new_price, _ := strconv.ParseFloat(q_price, 32)
+	new_volume, _ := strconv.ParseFloat(q_volume, 32)
 
-	for i, o := range markets {
-		if o.Name == market{
-			create_market = false
-			mkt = o
-			idx = i
-		}		
-	}
+  market := markets.FindOrCreate(q_market)
+  req_order := order.Order {
+    Id: new_id,
+    Price: new_price,
+    Volume: new_volume,
+  }
 
-	if create_market {
-		fmt.Println("CRIANDO MERCADO")
-
-		orderBookAsk := model.OrderBook {
-			Levels: make([]model.OrderLevel, 0),
-		}
-	
-		orderBookBid := model.OrderBook {
-			Levels: make([]model.OrderLevel, 0),
-		}
-	
-		book := model.Market{
-			Name: market,
-			Ask: orderBookAsk,
-			Bid: orderBookBid,
-		}
-
-		markets = append(markets, book)
-
-		mkt = book
-	}
-
-	for i, o := range markets {
-		if o.Name == market{			
-			mkt = o
-			idx = i
-		}		
-	}
-
-	newId, _ := strconv.ParseInt(id, 64, 0)
-	newPrice, _ := strconv.ParseFloat(price, 32)
-	newVolume, _ := strconv.ParseFloat(volume, 32)
-
-	order := model.Order{
-		Id:     newId,
-		Price:  newPrice,
-		Volume: newVolume,
-	}	
-
-	orderLevel := model.OrderLevel{
-		Price:  newPrice,
-		Volume: 0.0,
-		Orders: make([]model.Order, 0),
-	}
-	_, _ = orderLevel.Add(order)	
-
-	if side == "ask" {		
-		markets[idx].Ask.Levels = append(markets[idx].Ask.Levels, orderLevel)		
-	}else{
-		markets[idx].Bid.Levels = append(markets[idx].Bid.Levels, orderLevel)
-	}	
-
-	// markets = append(markets, mkt)
-
-	fmt.Printf("markets: %v\n", markets)
-
-	fmt.Printf("%v", mkt)
+  market.AddOrder(q_side, req_order)
 
 	var response OrderCreateResponse
-	response.Id = id
-	response.Price = price
-	response.Volume = volume
+	response.Id = q_id
+	response.Price = q_price
+	response.Volume = q_volume
 	response.Status = "ok"
-	response.Market = market
+	response.Market = q_market
 
 	c.JSON(http.StatusOK, response)
 }
 
 func RemoveOrder(c *gin.Context) {
-	market := c.Param("market")
-	id := c.Query("id")
+	q_market := c.Param("market")
+	q_id := c.Query("id")
 
-	if id == "" || market == "" {
+	if q_id == "" || q_market == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Faltam parametros"})
 		return
 	}
 
+	market := markets.FindOrCreate(q_market)
+	new_id, _ := strconv.ParseInt(q_id, 64, 0)
+
+	var rm_side string
+	var rm_order order.Order
+
+	for _, lv := range market.Ask.Levels {
+		for _, or := range lv.Orders {
+			if or.Id == new_id {
+				rm_side = "Ask"
+				rm_order = or
+
+				break
+			}
+		}
+	}
+
+	for _, lv := range market.Bid.Levels {
+		if rm_side == "Ask" {
+			break
+		}
+
+		for _, or := range lv.Orders {
+			if or.Id == new_id {
+				rm_side = "Bid"
+				rm_order = or
+
+				break
+			}
+		}
+	}
+
+	market.RemoveOrder(rm_side, rm_order)
+
 	var response OrderRemoveResponse
-	response.Id = id
+	response.Id = q_id
 	response.Status = "cancel"
-	response.Market = market
+	response.Market = q_market
 
 	c.JSON(http.StatusOK, response)
 }
 
 func OrderBook(c *gin.Context) {
-	market := c.Param("market")
+	q_market := c.Param("market")
+
+	market := markets.FindOrCreate(q_market)
+
+	var Asks [][2]float64
+	var Bids [][2]float64
+
+	for _, lv := range market.Ask.Levels {
+		level := [2]float64 {
+			lv.Price,
+			lv.Volume,
+		}
+
+	  Asks = append(Asks, level)
+	}
+
+	for _, lv := range market.Bid.Levels {
+		level := [2]float64 {
+			lv.Price,
+			lv.Volume,
+		}
+
+	  Bids = append(Bids, level)
+	}
 
 	var response OrderBookResponse
-	response.Market = market
+	response.Market = q_market
+	response.Asks = Asks
+	response.Bids = Bids
 
 	c.JSON(http.StatusOK, response)
 }

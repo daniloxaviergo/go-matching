@@ -19,7 +19,7 @@ func AddOrderIntoOrderLevel(t *testing.T) {
 		Volume: 10,
 	}
 
-	err := orderLevel.Add(order)
+	err, _ := orderLevel.Add(order)
 	if (err != nil) {
 		t.Fatal("Error when adding Order")
 	}

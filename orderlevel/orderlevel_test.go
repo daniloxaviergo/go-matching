@@ -2,26 +2,26 @@ package orderlevel_test
 
 import (
   "fmt"
-  "testing"
-  "go-matching/orderlevel"
   "go-matching/order"
+  "go-matching/orderlevel"
+  "testing"
 )
 
 func TestAddLevel(t *testing.T) {
-  order1 := order.Order {
-    Id: 1,
-    Price: 10.0,
+  order1 := order.Order{
+    Id:     1,
+    Price:  10.0,
     Volume: 0.5,
   }
 
-  order2 := order.Order {
-    Id: 2,
-    Price: 10.0,
+  order2 := order.Order{
+    Id:     2,
+    Price:  10.0,
     Volume: 0.2,
   }
 
-  orderLevel1 := orderlevel.OrderLevel {
-    Price: 10.0,
+  orderLevel1 := orderlevel.OrderLevel{
+    Price:  10.0,
     Volume: 0.0,
   }
 
@@ -64,26 +64,26 @@ func TestAddLevel(t *testing.T) {
 }
 
 func TestRemoveLevel(t *testing.T) {
-  order1 := order.Order {
-    Id: 1,
-    Price: 10.0,
+  order1 := order.Order{
+    Id:     1,
+    Price:  10.0,
     Volume: 0.5,
   }
 
-  order2 := order.Order {
-    Id: 2,
-    Price: 10.0,
+  order2 := order.Order{
+    Id:     2,
+    Price:  10.0,
     Volume: 0.2,
   }
 
-  order3 := order.Order {
-    Id: 3,
-    Price: 10.0,
+  order3 := order.Order{
+    Id:     3,
+    Price:  10.0,
     Volume: 0.3,
   }
 
-  orderLevel1 := orderlevel.OrderLevel {
-    Price: 10.0,
+  orderLevel1 := orderlevel.OrderLevel{
+    Price:  10.0,
     Volume: 0.0,
   }
 

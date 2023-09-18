@@ -2,9 +2,9 @@ package orderbook_test
 
 import (
   "fmt"
-  "testing"
-	"go-matching/orderbook"
   "go-matching/order"
+  "go-matching/orderbook"
+  "testing"
 )
 
 func TestCreateNewLevel(t *testing.T) {
@@ -59,21 +59,21 @@ func TestRemoveByVolume(t *testing.T) {
   orderLevel2 := book.FindOrCreate(20.0)
   book.FindOrCreate(30.0)
 
-  order1 := order.Order {
-    Id: 1,
-    Price: 10.0,
+  order1 := order.Order{
+    Id:     1,
+    Price:  10.0,
     Volume: 0.5,
   }
 
-  order3 := order.Order {
-    Id: 3,
-    Price: 10.0,
+  order3 := order.Order{
+    Id:     3,
+    Price:  10.0,
     Volume: 0.2,
   }
 
-  order2 := order.Order {
-    Id: 2,
-    Price: 20.0,
+  order2 := order.Order{
+    Id:     2,
+    Price:  20.0,
     Volume: 0.3,
   }
 
